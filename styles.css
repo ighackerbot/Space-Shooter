@@ -12,17 +12,29 @@ body {
     background-color: #000;
     font-family: Arial, sans-serif;
     overflow: hidden;
+    position: relative;
+}
+
+#spaceBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
 }
 
 .game-container {
     position: relative;
     width: 800px;
     height: 600px;
-    background-color: #000;
-    border: 2px solid #333;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(0, 255, 255, 0.3);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
 }
 
 .score, .health {
@@ -48,18 +60,130 @@ body {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-color: #0ff;
+    background: linear-gradient(135deg, #0ff, #00ffff);
     clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
     transition: transform 0.1s;
+}
+
+.player::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 10px;
+    background: radial-gradient(circle, #0ff 0%, transparent 70%);
+    filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.player.shooting::after {
+    opacity: 1;
 }
 
 .bullet {
     position: absolute;
     width: 4px;
     height: 15px;
-    background-color: #0ff;
+    background: linear-gradient(to bottom, #0ff, #00ffff);
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+    animation: glow 1s infinite alternate;
+    transform-origin: center bottom;
+}
+
+.bullet.spread {
+    width: 3px;
+    height: 12px;
+    background: linear-gradient(to bottom, #0f0, #00ff00);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+.bullet.laser {
+    width: 6px;
+    height: 20px;
+    background: linear-gradient(to bottom, #ff0, #ffff00);
+    box-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
+}
+
+.bullet::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    filter: blur(1px);
+}
+
+.bullet::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    filter: blur(2px);
+    animation: pulse 1s infinite;
+}
+
+.bullet.normal::after {
+    color: #0ff;
+}
+
+.bullet.spread::after {
+    color: #0f0;
+}
+
+.bullet.laser::after {
+    color: #ff0;
+}
+
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #0ff;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFade 0.5s ease-out forwards;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes particleFade {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20px) scale(0);
+        opacity: 0;
+    }
 }
 
 .enemy {

@@ -15,9 +15,25 @@ let keys = {};
 let bullets = [];
 let enemies = [];
 let enemySpawnInterval;
+let lastShotTime = 0;
+let currentWeapon = 'normal';
+let weaponCooldowns = {
+    normal: 200,    // 200ms cooldown
+    spread: 500,    // 500ms cooldown
+    laser: 1000     // 1000ms cooldown
+};
+
+// Sound effects
+const shootSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+shootSound.volume = 0.2;
 
 document.addEventListener('keydown', (e) => {
     keys[e.key] = true;
+    
+    // Weapon switching
+    if (e.key === '1') currentWeapon = 'normal';
+    if (e.key === '2') currentWeapon = 'spread';
+    if (e.key === '3') currentWeapon = 'laser';
 });
 
 document.addEventListener('keyup', (e) => {
@@ -26,17 +42,62 @@ document.addEventListener('keyup', (e) => {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === ' ' && isPlaying) {
-        shoot();
+        const currentTime = Date.now();
+        if (currentTime - lastShotTime >= weaponCooldowns[currentWeapon]) {
+            shoot();
+            lastShotTime = currentTime;
+        }
     }
 });
 
+function createParticle(x, y, color = '#0ff') {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    particle.style.background = color;
+    gameContainer.appendChild(particle);
+    
+    setTimeout(() => {
+        particle.remove();
+    }, 500);
+}
+
 function shoot() {
+    // Play sound effect
+    shootSound.currentTime = 0;
+    shootSound.play();
+
+    // Add shooting animation to player
+    player.classList.add('shooting');
+    setTimeout(() => {
+        player.classList.remove('shooting');
+    }, 100);
+
+    switch(currentWeapon) {
+        case 'normal':
+            createBullet(playerX + 23, playerY, 'normal');
+            break;
+        case 'spread':
+            // Create 3 bullets in a spread pattern
+            createBullet(playerX + 23, playerY, 'spread', -15);
+            createBullet(playerX + 23, playerY, 'spread', 0);
+            createBullet(playerX + 23, playerY, 'spread', 15);
+            break;
+        case 'laser':
+            createBullet(playerX + 23, playerY, 'laser');
+            break;
+    }
+}
+
+function createBullet(x, y, type, angle = 0) {
     const bullet = document.createElement('div');
-    bullet.className = 'bullet';
-    bullet.style.left = (playerX + 23) + 'px';
-    bullet.style.top = playerY + 'px';
+    bullet.className = `bullet ${type}`;
+    bullet.style.left = x + 'px';
+    bullet.style.top = y + 'px';
+    bullet.style.transform = `rotate(${angle}deg)`;
     gameContainer.appendChild(bullet);
-    bullets.push(bullet);
+    bullets.push({ element: bullet, type, angle });
 }
 
 function movePlayer() {
@@ -69,11 +130,32 @@ function createEnemy() {
 function moveBullets() {
     for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
-        const top = parseInt(bullet.style.top);
-        bullet.style.top = (top - 7) + 'px';
+        const top = parseInt(bullet.element.style.top);
         
-        if (top < 0) {
-            bullet.remove();
+        // Different speeds for different bullet types
+        let speed = 7;
+        if (bullet.type === 'laser') speed = 10;
+        if (bullet.type === 'spread') speed = 6;
+        
+        // Move bullet based on its angle
+        const angleRad = bullet.angle * Math.PI / 180;
+        const newTop = top - speed * Math.cos(angleRad);
+        const newLeft = parseInt(bullet.element.style.left) + speed * Math.sin(angleRad);
+        
+        bullet.element.style.top = newTop + 'px';
+        bullet.element.style.left = newLeft + 'px';
+        
+        // Create trail particles
+        if (Math.random() < 0.3) {
+            createParticle(
+                newLeft + (Math.random() - 0.5) * 4,
+                newTop + 7,
+                bullet.type === 'laser' ? '#ff0' : '#0ff'
+            );
+        }
+        
+        if (newTop < 0 || newLeft < 0 || newLeft > 800) {
+            bullet.element.remove();
             bullets.splice(i, 1);
         }
     }
@@ -101,13 +183,13 @@ function moveEnemies() {
         
         for (let j = bullets.length - 1; j >= 0; j--) {
             const bullet = bullets[j];
-            const bulletLeft = parseInt(bullet.style.left);
-            const bulletTop = parseInt(bullet.style.top);
+            const bulletLeft = parseInt(bullet.element.style.left);
+            const bulletTop = parseInt(bullet.element.style.top);
             const enemyLeft = parseInt(enemy.style.left);
             
             if (bulletTop > top && bulletTop < top + 40 &&
                 bulletLeft > enemyLeft - 4 && bulletLeft < enemyLeft + 40) {
-                bullet.remove();
+                bullet.element.remove();
                 bullets.splice(j, 1);
                 enemy.remove();
                 enemies.splice(i, 1);
@@ -138,7 +220,7 @@ function restartGame() {
     playerY = 500;
     scoreElement.textContent = score;
     healthElement.textContent = health;
-    bullets.forEach(bullet => bullet.remove());
+    bullets.forEach(bullet => bullet.element.remove());
     enemies.forEach(enemy => enemy.remove());
     bullets = [];
     enemies = [];
