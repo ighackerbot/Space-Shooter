@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #000;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    background-color: #000;
+    border: 2px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.score, .health {
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    z-index: 100;
+}
+
+.score {
+    top: 20px;
+    left: 20px;
+}
+
+.health {
+    top: 20px;
+    right: 20px;
+}
+
+.player {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #0ff;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transition: transform 0.1s;
+}
+
+.bullet {
+    position: absolute;
+    width: 4px;
+    height: 15px;
+    background-color: #0ff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.enemy {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: #f00;
+    clip-path: polygon(50% 100%, 100% 0%, 0% 0%);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.game-over {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    color: #fff;
+    z-index: 1000;
+}
+
+.game-over h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #0ff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.game-over p {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+#restartButton {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #0ff;
+    border: none;
+    border-radius: 5px;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#restartButton:hover {
+    background-color: #00ffff;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+} 
