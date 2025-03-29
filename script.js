@@ -5,8 +5,6 @@ const healthElement = document.getElementById('health');
 const gameOverScreen = document.getElementById('gameOver');
 const finalScoreElement = document.getElementById('finalScore');
 const restartButton = document.getElementById('restartButton');
-const instructionsPanel = document.getElementById('instructions');
-const closeInstructionsButton = document.getElementById('closeInstructions');
 
 let score = 0;
 let health = 100;
@@ -19,50 +17,32 @@ let enemies = [];
 let enemySpawnInterval;
 let lastShotTime = 0;
 let currentWeapon = 'normal';
-let weaponCooldowns = {
-    normal: 200,   
-    spread: 500,  
-    laser: 1000
+let gameLoopId = null;
+
+const weaponCooldowns = {
+    normal: 200,    // 200ms cooldown
+    spread: 500,    // 500ms cooldown
+    laser: 1000     // 1000ms cooldown
 };
 
 const shootSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
 shootSound.volume = 0.2;
 
-instructionsPanel.style.display = 'block';
-isPlaying = false;
+function initGame() {
+    startGameLoop();
+}
 
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', handleKeyDown);
+document.addEventListener('keyup', handleKeyUp);
+restartButton.addEventListener('click', restartGame);
+
+function handleKeyDown(e) {
     keys[e.key] = true;
     
     if (e.key === '1') currentWeapon = 'normal';
     if (e.key === '2') currentWeapon = 'spread';
     if (e.key === '3') currentWeapon = 'laser';
     
-    if (e.key.toLowerCase() === 'h') {
-        toggleInstructions();
-    }
-});
-
-function toggleInstructions() {
-    if (instructionsPanel.style.display === 'block') {
-        instructionsPanel.style.display = 'none';
-        isPlaying = true;
-    } else {
-        instructionsPanel.style.display = 'block';
-        isPlaying = false;
-    }
-}
-
-closeInstructionsButton.addEventListener('click', () => {
-    instructionsPanel.style.display = 'none';
-    isPlaying = true;
-});
-
-document.addEventListener('keyup', (e) => {
-    keys[e.key] = false;
-});
-
-document.addEventListener('keydown', (e) => {
     if (e.key === ' ' && isPlaying) {
         const currentTime = Date.now();
         if (currentTime - lastShotTime >= weaponCooldowns[currentWeapon]) {
@@ -70,7 +50,11 @@ document.addEventListener('keydown', (e) => {
             lastShotTime = currentTime;
         }
     }
-});
+}
+
+function handleKeyUp(e) {
+    keys[e.key] = false;
+}
 
 function createParticle(x, y, color = '#0ff') {
     const particle = document.createElement('div');
@@ -87,7 +71,8 @@ function createParticle(x, y, color = '#0ff') {
 
 function shoot() {
     shootSound.currentTime = 0;
-    shootSound.play();
+    shootSound.play().catch(() => {}); // Ignore autoplay errors
+
     player.classList.add('shooting');
     setTimeout(() => {
         player.classList.remove('shooting');
@@ -98,7 +83,6 @@ function shoot() {
             createBullet(playerX + 23, playerY, 'normal');
             break;
         case 'spread':
-            // Create 3 bullets in a spread pattern
             createBullet(playerX + 23, playerY, 'spread', -15);
             createBullet(playerX + 23, playerY, 'spread', 0);
             createBullet(playerX + 23, playerY, 'spread', 15);
@@ -120,17 +104,18 @@ function createBullet(x, y, type, angle = 0) {
 }
 
 function movePlayer() {
+    const speed = 5;
     if (keys['ArrowLeft'] && playerX > 0) {
-        playerX -= 5;
+        playerX -= speed;
     }
     if (keys['ArrowRight'] && playerX < 750) {
-        playerX += 5;
+        playerX += speed;
     }
     if (keys['ArrowUp'] && playerY > 0) {
-        playerY -= 5;
+        playerY -= speed;
     }
     if (keys['ArrowDown'] && playerY < 550) {
-        playerY += 5;
+        playerY += speed;
     }
     
     player.style.left = playerX + 'px';
@@ -151,12 +136,10 @@ function moveBullets() {
         const bullet = bullets[i];
         const top = parseInt(bullet.element.style.top);
         
-        // Different speeds for different bullet types
         let speed = 7;
         if (bullet.type === 'laser') speed = 10;
         if (bullet.type === 'spread') speed = 6;
         
-        // Move bullet based on its angle
         const angleRad = bullet.angle * Math.PI / 180;
         const newTop = top - speed * Math.cos(angleRad);
         const newLeft = parseInt(bullet.element.style.left) + speed * Math.sin(angleRad);
@@ -164,7 +147,6 @@ function moveBullets() {
         bullet.element.style.top = newTop + 'px';
         bullet.element.style.left = newLeft + 'px';
         
-        // Create trail particles
         if (Math.random() < 0.3) {
             createParticle(
                 newLeft + (Math.random() - 0.5) * 4,
@@ -244,8 +226,14 @@ function restartGame() {
     bullets = [];
     enemies = [];
     gameOverScreen.style.display = 'none';
-    instructionsPanel.style.display = 'none';
     enemySpawnInterval = setInterval(createEnemy, 2000);
+}
+
+function startGameLoop() {
+    if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+    }
+    gameLoopId = requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
@@ -253,10 +241,10 @@ function gameLoop() {
         movePlayer();
         moveBullets();
         moveEnemies();
-        requestAnimationFrame(gameLoop);
+        gameLoopId = requestAnimationFrame(gameLoop);
     }
 }
 
-restartButton.addEventListener('click', restartGame);
-gameLoop();
+// Start the game
+initGame();
 enemySpawnInterval = setInterval(createEnemy, 2000); 

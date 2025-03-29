@@ -3,23 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Space Shooter Game - A fun arcade-style space shooting game">
+    <meta name="theme-color" content="#000000">
     <title>Space Shooter</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://assets.mixkit.co">
 </head>
 <body>
-    <video autoplay muted loop id="spaceBackground">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4">
-    </video>
-    <div class="game-container">
-        <div class="score">Score: <span id="score">0</span></div>
-        <div class="health">Health: <span id="health">100</span></div>
-        <div class="player" id="player"></div>
-        <div class="game-over" id="gameOver">
-            <h2>Game Over!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
-            <button id="restartButton">Play Again</button>
+    <div class="game-layout">
+        <div class="game-wrapper">
+            <video autoplay muted loop id="spaceBackground" playsinline>
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="game-container">
+                <div class="game-header">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="health">Health: <span id="health">100</span></div>
+                </div>
+                <div class="game-area">
+                    <div class="player" id="player"></div>
+                    <div class="game-over" id="gameOver">
+                        <h2>Game Over!</h2>
+                        <p>Final Score: <span id="finalScore">0</span></p>
+                        <button id="restartButton">Play Again</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="instructions" id="instructions">
+        <div class="instructions-panel" id="instructions">
             <h2>How to Play</h2>
             <div class="controls">
                 <div class="control-group">
@@ -43,7 +55,6 @@
                     <p>Avoid enemy collisions</p>
                 </div>
             </div>
-            <button id="closeInstructions">Close</button>
         </div>
     </div>
     <script src="script.js"></script>
