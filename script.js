@@ -5,6 +5,8 @@ const healthElement = document.getElementById('health');
 const gameOverScreen = document.getElementById('gameOver');
 const finalScoreElement = document.getElementById('finalScore');
 const restartButton = document.getElementById('restartButton');
+const instructionsPanel = document.getElementById('instructions');
+const closeInstructionsButton = document.getElementById('closeInstructions');
 
 let score = 0;
 let health = 100;
@@ -18,22 +20,42 @@ let enemySpawnInterval;
 let lastShotTime = 0;
 let currentWeapon = 'normal';
 let weaponCooldowns = {
-    normal: 200,    // 200ms cooldown
-    spread: 500,    // 500ms cooldown
-    laser: 1000     // 1000ms cooldown
+    normal: 200,   
+    spread: 500,  
+    laser: 1000
 };
 
-// Sound effects
 const shootSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
 shootSound.volume = 0.2;
+
+instructionsPanel.style.display = 'block';
+isPlaying = false;
 
 document.addEventListener('keydown', (e) => {
     keys[e.key] = true;
     
-    // Weapon switching
     if (e.key === '1') currentWeapon = 'normal';
     if (e.key === '2') currentWeapon = 'spread';
     if (e.key === '3') currentWeapon = 'laser';
+    
+    if (e.key.toLowerCase() === 'h') {
+        toggleInstructions();
+    }
+});
+
+function toggleInstructions() {
+    if (instructionsPanel.style.display === 'block') {
+        instructionsPanel.style.display = 'none';
+        isPlaying = true;
+    } else {
+        instructionsPanel.style.display = 'block';
+        isPlaying = false;
+    }
+}
+
+closeInstructionsButton.addEventListener('click', () => {
+    instructionsPanel.style.display = 'none';
+    isPlaying = true;
 });
 
 document.addEventListener('keyup', (e) => {
@@ -64,11 +86,8 @@ function createParticle(x, y, color = '#0ff') {
 }
 
 function shoot() {
-    // Play sound effect
     shootSound.currentTime = 0;
     shootSound.play();
-
-    // Add shooting animation to player
     player.classList.add('shooting');
     setTimeout(() => {
         player.classList.remove('shooting');
@@ -225,6 +244,7 @@ function restartGame() {
     bullets = [];
     enemies = [];
     gameOverScreen.style.display = 'none';
+    instructionsPanel.style.display = 'none';
     enemySpawnInterval = setInterval(createEnemy, 2000);
 }
 
